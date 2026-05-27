@@ -73,6 +73,13 @@
     .mono { font-family: 'JetBrains Mono', Menlo, monospace; }
     .pure { color: var(--teal-700); font-weight: 700; }
     section.dark .pure { color: var(--teal-200); }
+    .ref-link, .ref-link:visited {
+      color: inherit;
+      text-decoration: none;
+      border-bottom: 1px dotted var(--ink-400);
+      transition: all 0.15s ease;
+    }
+    .ref-link:hover { color: var(--teal-700); border-bottom-color: var(--teal-600); }
     .formula {
       background: var(--ink-50);
       border: 1px solid var(--ink-200);
@@ -132,7 +139,7 @@
       font-size: 16.5px;
       color: var(--ink-700);
     }
-    .authors a {
+    .authors a, .authors a:visited {
       color: var(--ink-900);
       text-decoration: none;
       border-bottom: 1.5px solid var(--teal-200);
@@ -167,7 +174,7 @@
       gap: 10px;
       justify-content: center;
     }
-    .btn {
+    .btn, .btn:visited {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -182,6 +189,7 @@
       transition: all 0.15s ease;
       box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     }
+    .btn.primary, .btn.primary:visited { color: #fff; }
     .btn:hover {
       background: var(--ink-900);
       color: #fff;
@@ -606,7 +614,7 @@
       background: var(--ink-900);
       border-top: 1px solid rgba(255,255,255,0.05);
     }
-    footer a { color: var(--teal-200); text-decoration: none; }
+    footer a, footer a:visited { color: var(--teal-200); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
 
     @media (max-width: 600px) {
@@ -784,6 +792,9 @@
       <p>
         Because the basis is built from <em>what the U-Net renders</em> rather than what the user happens to type, the edit generalizes to paraphrased and adversarial prompts that the anchor set does not literally contain.
       </p>
+      <p>
+        <strong>Relationship to <a href="https://arxiv.org/abs/2505.12677" target="_blank" rel="noopener" class="ref-link">CURE</a>.</strong> <span class="pure">PURE</span> inherits the projection-and-cancellation form of CURE and edits the same cross-attention K/V matrices. The change is <em>what gets projected</em>: per-layer cross-attention activations rather than text-encoder embeddings. The switch in basis source forces the projector to be applied by left-multiplication instead of right-multiplication.
+      </p>
     </div>
   </section>
 
@@ -796,7 +807,7 @@
       </div>
 
       <p>
-        We report the HUB <strong>H-mean</strong>, a harmonic mean over four metrics: <strong>target proportion</strong>, <strong>within-category retention</strong>, <strong>attack robustness</strong>, and <strong>quality</strong>. <span class="pure">PURE wins every category</span>, and improves the average over the next-best baseline (CURE) by <strong>+9.7 points</strong>.
+        We report the HUB <strong>H-mean</strong>, a harmonic mean over four metrics: <strong>target proportion</strong>, <strong>within-category retention</strong>, <strong>attack robustness</strong>, and <strong>quality</strong>. <span class="pure">PURE wins every category</span>, and improves the average over the next-best baseline (<a href="https://arxiv.org/abs/2505.12677" target="_blank" rel="noopener" class="ref-link">CURE</a>) by <strong>+9.7 points</strong>.
       </p>
 
       <div class="table-wrap">
