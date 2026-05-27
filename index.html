@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PURE: Concept Unlearning via Cross-Attention Activation Projection for Diffusion Models</title>
+  <meta name="description" content="PURE (Projection in U-Net Rendering for Erasure): a closed-form method for erasing target concepts from pretrained text-to-image diffusion models via cross-attention activation projection." />
+  <meta property="og:title" content="PURE: Concept Unlearning via Cross-Attention Activation Projection for Diffusion Models" />
+  <meta property="og:description" content="A closed-form projector built from cross-attention activations erases target concepts while preserving the rest." />
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="figures/x1.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- KaTeX for math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '\\(', right: '\\)', display: false}], throwOnError: false});"></script>
+
+  <style>
+    :root {
+      --teal-50:  #f0fdfa;
+      --teal-100: #ccfbf1;
+      --teal-200: #99f6e4;
+      --teal-500: #14b8a6;
+      --teal-600: #0d9488;
+      --teal-700: #0f766e;
+      --teal-900: #134e4a;
+
+      --coral-50:  #fff7ed;
+      --coral-100: #ffedd5;
+      --coral-500: #f97316;
+      --coral-600: #ea580c;
+      --coral-700: #c2410c;
+
+      --ink-900: #0f172a;
+      --ink-700: #334155;
+      --ink-500: #64748b;
+      --ink-400: #94a3b8;
+      --ink-300: #cbd5e1;
+      --ink-200: #e2e8f0;
+      --ink-100: #f1f5f9;
+      --ink-50:  #f8fafc;
+
+      --cream:   #faf8f3;
+      --paper:   #ffffff;
+
+      --radius-sm: 8px;
+      --radius:    12px;
+      --radius-lg: 18px;
+
+      --content-w: 880px;
+      --wide-w:    1120px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink-900);
+      background: var(--paper);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .wrap      { max-width: var(--content-w); margin: 0 auto; padding: 0 24px; }
+    .wrap-wide { max-width: var(--wide-w);    margin: 0 auto; padding: 0 24px; }
+
+    .mono { font-family: 'JetBrains Mono', Menlo, monospace; }
+    .pure { color: var(--teal-700); font-weight: 700; }
+    section.dark .pure { color: var(--teal-200); }
+    .formula {
+      background: var(--ink-50);
+      border: 1px solid var(--ink-200);
+      border-left: 3px solid var(--teal-500);
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      margin: 12px 0;
+      overflow-x: auto;
+    }
+    .formula .katex { font-size: 1.05em; }
+    .katex { color: var(--ink-900); }
+
+    /* ========== HERO ========== */
+    header.hero {
+      padding: 88px 0 56px;
+      text-align: center;
+      background: var(--paper);
+      border-bottom: 1px solid var(--ink-200);
+    }
+
+    h1.title {
+      font-size: clamp(28px, 3.8vw, 42px);
+      line-height: 1.2;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin: 0 auto;
+      max-width: 900px;
+      color: var(--ink-900);
+    }
+    h1.title .method {
+      color: var(--teal-600);
+      position: relative;
+      display: inline-block;
+    }
+    h1.title .method::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: 4px;
+      height: 10px;
+      background: var(--teal-100);
+      z-index: -1;
+      border-radius: 2px;
+    }
+
+    .subtitle {
+      color: var(--ink-700);
+      font-size: 18px;
+      max-width: 660px;
+      margin: 22px auto 0;
+      line-height: 1.55;
+    }
+    .subtitle .hi { background: var(--teal-100); padding: 1px 6px; border-radius: 4px; color: var(--teal-900); font-weight: 500; }
+    .subtitle .lo { background: var(--coral-100); padding: 1px 6px; border-radius: 4px; color: var(--coral-700); font-weight: 500; }
+
+    .authors {
+      margin-top: 36px;
+      font-size: 16.5px;
+      color: var(--ink-700);
+    }
+    .authors a {
+      color: var(--ink-900);
+      text-decoration: none;
+      border-bottom: 1.5px solid var(--teal-200);
+      transition: all 0.15s ease;
+      padding-bottom: 1px;
+    }
+    .authors a:hover { color: var(--teal-700); border-color: var(--teal-600); }
+    .authors sup { color: var(--teal-600); font-weight: 700; font-size: 0.7em; }
+
+    .affiliations {
+      margin-top: 10px;
+      font-size: 14px;
+      color: var(--ink-500);
+    }
+    .affiliations sup { color: var(--teal-600); font-weight: 700; margin-right: 2px; }
+    .affiliations .sep { color: var(--ink-200); margin: 0 8px; }
+
+    .venue {
+      margin-top: 18px;
+      font-size: 12px;
+      color: var(--ink-400);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    /* Buttons */
+    .actions {
+      margin-top: 32px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 20px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      color: var(--ink-900);
+      background: var(--paper);
+      border: 1px solid var(--ink-200);
+      transition: all 0.15s ease;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    .btn:hover {
+      background: var(--ink-900);
+      color: #fff;
+      border-color: var(--ink-900);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+    }
+    .btn.primary {
+      background: var(--teal-600);
+      color: #fff;
+      border-color: var(--teal-600);
+    }
+    .btn.primary:hover {
+      background: var(--teal-700);
+      border-color: var(--teal-700);
+      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+    }
+    .btn.disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      pointer-events: none;
+      background: var(--ink-50);
+      color: var(--ink-500);
+    }
+    .btn svg { width: 16px; height: 16px; }
+
+    /* ========== SECTIONS ========== */
+    section { padding: 72px 0; position: relative; }
+    section.alt { background: var(--cream); }
+    section.dark { background: var(--ink-900); color: var(--ink-200); }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .section-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--coral-600);
+      letter-spacing: 0.06em;
+    }
+    .section-num::before { content: '— '; opacity: 0.5; }
+    h2.section-title {
+      font-size: clamp(22px, 2.4vw, 28px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0;
+      color: var(--ink-900);
+    }
+
+    section p {
+      color: var(--ink-700);
+      font-size: 16.5px;
+      margin: 0 0 18px;
+    }
+    section p strong { color: var(--ink-900); font-weight: 600; }
+    section p em { font-style: italic; color: var(--ink-900); }
+    section.dark p { color: var(--ink-300); }
+
+    /* ========== TEASER (full-bleed prominence) ========== */
+    .teaser-wrap {
+      padding: 56px 0 24px;
+      background: var(--paper);
+    }
+    .teaser-figure img {
+      width: 100%;
+      height: auto;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--ink-200);
+      box-shadow:
+        0 1px 0 rgba(15, 23, 42, 0.04),
+        0 24px 60px -24px rgba(13, 148, 136, 0.28),
+        0 8px 24px -8px rgba(15, 23, 42, 0.08);
+      background: var(--paper);
+    }
+    .teaser-caption {
+      margin: 18px 0 0;
+      font-size: 15px;
+      color: var(--ink-500);
+      text-align: center;
+      line-height: 1.6;
+    }
+    .fig-label {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--teal-700);
+      background: var(--teal-50);
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-right: 6px;
+      letter-spacing: 0.04em;
+      vertical-align: 2px;
+      border: 1px solid var(--teal-100);
+    }
+
+    /* ========== TL;DR (clean horizontal card) ========== */
+    .tldr {
+      background: var(--paper);
+      border: 1px solid var(--teal-200);
+      border-left: 4px solid var(--teal-500);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      margin: 0 0 28px;
+      box-shadow: 0 4px 16px -10px rgba(13, 148, 136, 0.25);
+    }
+    section.alt .tldr { background: var(--paper); }
+    .tldr .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--teal-700);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .tldr p {
+      color: var(--ink-900);
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    /* ========== STAT CALLOUTS ========== */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 28px 0 0;
+    }
+    .stat {
+      background: var(--paper);
+      border: 1px solid var(--ink-200);
+      border-radius: var(--radius);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: var(--teal-500);
+    }
+    .stat.coral::before { background: var(--coral-500); }
+    .stat.ink::before { background: var(--ink-900); }
+    .stat .num {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--ink-900);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 6px;
+      font-feature-settings: "tnum";
+    }
+    .stat .num .unit { font-size: 16px; color: var(--ink-500); font-weight: 600; margin-left: 2px; }
+    .stat .label {
+      font-size: 13px;
+      color: var(--ink-500);
+      line-height: 1.45;
+    }
+    @media (max-width: 640px) { .stats { grid-template-columns: 1fr; } }
+
+    /* ========== FIGURES (in-section) ========== */
+    .figure {
+      margin: 28px 0 8px;
+      text-align: center;
+    }
+    .figure img {
+      max-width: 100%;
+      height: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--ink-200);
+      background: var(--paper);
+      box-shadow: 0 10px 30px -14px rgba(15, 23, 42, 0.15);
+    }
+    .figure.bleed img {
+      border-radius: var(--radius-lg);
+      box-shadow:
+        0 20px 50px -20px rgba(15, 23, 42, 0.18),
+        0 8px 20px -8px rgba(15, 23, 42, 0.08);
+    }
+    .figure-scroll {
+      overflow-x: auto;
+      border-radius: var(--radius-lg);
+      -webkit-overflow-scrolling: touch;
+    }
+    .figure-scroll img {
+      display: block;
+      min-width: 760px;
+      margin: 0 auto;
+    }
+    .figure .caption {
+      margin: 14px 0 0;
+      font-size: 15px;
+      color: var(--ink-500);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* ========== SPLIT (text + figure) ========== */
+    .split {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 36px;
+      align-items: center;
+      margin: 28px 0 8px;
+    }
+    .split .text p { margin-bottom: 12px; }
+    .split .fig img {
+      max-width: 100%;
+      height: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--ink-200);
+      background: var(--paper);
+      box-shadow: 0 10px 30px -14px rgba(13, 148, 136, 0.25);
+    }
+    .split .fig .caption {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--ink-500);
+      text-align: center;
+      line-height: 1.55;
+    }
+    @media (max-width: 720px) { .split { grid-template-columns: 1fr; gap: 24px; } }
+
+    /* ========== METHOD PIPELINE (vertical rows) ========== */
+    .pipeline {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin: 28px 0;
+    }
+    .step {
+      position: relative;
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 24px;
+      padding: 24px 28px;
+      border-radius: var(--radius);
+      background: var(--paper);
+      border: 1px solid var(--ink-200);
+    }
+    .step-side {
+      border-right: 1px solid var(--ink-200);
+      padding-right: 24px;
+    }
+    .step .step-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--coral-500);
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+      line-height: 1.4;
+    }
+    .step .step-big {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--ink-900);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .step h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin: 0 0 10px;
+      color: var(--ink-900);
+      letter-spacing: -0.01em;
+    }
+    .step p {
+      font-size: 15px;
+      color: var(--ink-700);
+      margin: 0 0 10px;
+      line-height: 1.6;
+    }
+    .step p:last-child { margin-bottom: 0; }
+    @media (max-width: 600px) {
+      .step { grid-template-columns: 1fr; gap: 12px; padding: 20px; }
+      .step-side { border-right: none; border-bottom: 1px solid var(--ink-200); padding-right: 0; padding-bottom: 12px; display: flex; align-items: baseline; gap: 12px; }
+      .step .step-big { font-size: 20px; }
+    }
+
+    /* ========== ABLATION GRID (2 charts side by side) ========== */
+    .ablation-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 24px 0 8px;
+    }
+    .ablation-grid .fig img {
+      max-width: 100%;
+      height: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--ink-200);
+      background: var(--paper);
+      box-shadow: 0 10px 30px -14px rgba(13, 148, 136, 0.2);
+    }
+    .ablation-grid .caption {
+      margin-top: 12px;
+      font-size: 14px;
+      color: var(--ink-500);
+      text-align: center;
+      line-height: 1.55;
+    }
+    @media (max-width: 720px) { .ablation-grid { grid-template-columns: 1fr; gap: 28px; } }
+
+    /* ========== RESULTS TABLE ========== */
+    .table-wrap {
+      margin: 24px 0 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--ink-200);
+      background: var(--paper);
+      overflow-x: auto;
+      box-shadow: 0 4px 16px -10px rgba(15, 23, 42, 0.1);
+    }
+    table.results {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      font-feature-settings: "tnum";
+    }
+    table.results thead th {
+      text-align: center;
+      padding: 14px 12px;
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--ink-500);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--ink-200);
+      background: var(--ink-50);
+    }
+    table.results thead th:first-child { text-align: left; padding-left: 20px; }
+    table.results tbody td {
+      padding: 11px 12px;
+      text-align: center;
+      color: var(--ink-700);
+      border-bottom: 1px solid var(--ink-100);
+    }
+    table.results tbody td:first-child {
+      text-align: left;
+      padding-left: 20px;
+      font-weight: 600;
+      color: var(--ink-900);
+    }
+    table.results tbody tr:last-child td { border-bottom: none; }
+    table.results .baseline td { color: var(--ink-400); font-style: italic; }
+    table.results .baseline td:first-child { color: var(--ink-500); }
+    table.results .best { font-weight: 700; color: var(--ink-900); }
+    table.results tr.pure {
+      background: var(--teal-50);
+    }
+    table.results tr.pure td {
+      color: var(--teal-900);
+      font-weight: 600;
+      border-bottom-color: var(--teal-100);
+    }
+    table.results tr.pure td:first-child {
+      color: var(--teal-700);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+    table.results tr.pure td.best { color: var(--teal-700); font-weight: 700; }
+    .table-caption {
+      font-size: 14px;
+      color: var(--ink-500);
+      text-align: center;
+      margin: 12px 0 0;
+      line-height: 1.55;
+    }
+
+    /* ========== BIBTEX (dark) ========== */
+    section.bibtex-section { background: var(--ink-900); color: var(--ink-200); }
+    section.bibtex-section h2.section-title { color: var(--paper); }
+    section.bibtex-section .section-num { color: var(--teal-200); }
+    section.bibtex-section p { color: var(--ink-400); }
+
+    .bibtex-wrap { position: relative; margin-top: 8px; }
+    pre.bibtex {
+      background: rgba(255,255,255,0.04);
+      color: var(--ink-200);
+      padding: 24px;
+      border-radius: var(--radius);
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', Menlo, monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      margin: 0;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    pre.bibtex .k { color: var(--teal-200); }
+    pre.bibtex .s { color: #fcd34d; }
+    .copy-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--ink-200);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      transition: all 0.15s ease;
+    }
+    .copy-btn:hover { background: var(--teal-600); border-color: var(--teal-600); color: #fff; }
+
+    /* ========== FOOTER ========== */
+    footer {
+      padding: 36px 0 48px;
+      text-align: center;
+      color: var(--ink-400);
+      font-size: 13px;
+      background: var(--ink-900);
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    footer a { color: var(--teal-200); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 600px) {
+      header.hero { padding: 64px 0 40px; }
+      section { padding: 56px 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== HERO ========== -->
+  <header class="hero">
+    <div class="wrap">
+      <h1 class="title">
+        Concept Unlearning via Cross-Attention Activation Projection for Diffusion Models
+      </h1>
+
+      <p class="subtitle">
+        A closed-form projector built from <span class="hi">cross-attention activations</span> rather than <span class="lo">text-encoder anchors</span>. <span class="pure">PURE</span> erases target concepts while preserving the rest, even under paraphrased and adversarial prompts.
+      </p>
+
+      <div class="authors">
+        <a href="https://saemi410.github.io" target="_blank" rel="noopener">Saemi Moon</a><sup>1</sup>,
+        <a href="#">Suhyeon Jun</a><sup>1</sup>,
+        <a href="#">Seoyeon Lee</a><sup>2</sup>,
+        <a href="https://dongwookim-ml.github.io/" target="_blank" rel="noopener">Dongwoo Kim</a><sup>1,2</sup>
+      </div>
+      <div class="affiliations">
+        <sup>1</sup>CSE, POSTECH <span class="sep">·</span> <sup>2</sup>GSAI, POSTECH
+      </div>
+      <div class="venue">Preprint &middot; May 2026</div>
+
+      <div class="actions">
+        <a class="btn primary" href="https://arxiv.org/abs/2605.25765" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          arXiv
+        </a>
+        <a class="btn" href="https://arxiv.org/pdf/2605.25765" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          PDF
+        </a>
+        <a class="btn disabled" href="#" aria-disabled="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          Code (coming soon)
+        </a>
+        <a class="btn" href="#bibtex">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          BibTeX
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========== TEASER FIGURE ========== -->
+  <div class="teaser-wrap">
+    <div class="wrap">
+      <div class="teaser-figure">
+        <img src="figures/compare_basis.png" alt="Comparison between text and activation bases" />
+      </div>
+      <div class="teaser-caption">
+        <span class="fig-label">FIG. 01</span>
+        Prior closed-form methods build a shared <em>text-space</em> basis from anchor prompt embeddings. <span class="pure">PURE</span> instead captures layer-specific cross-attention <em>activations</em> during denoising and constructs an activation-space basis for each U-Net cross-attention layer.
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ABSTRACT ========== -->
+  <section id="abstract">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Overview</h2>
+      </div>
+
+      <p>
+        Concept unlearning erases a target concept from a pretrained text-to-image diffusion model without retraining. Existing closed-form methods rely on the text encoder's response to short anchor prompts, so paraphrased prompts that evoke the concept without naming it slip past the edit. <span class="pure">PURE</span> (Projection in U-Net Rendering for Erasure) builds forget and retain bases directly from per-layer cross-attention <em>activations</em> along a short denoising trajectory, then applies a single closed-form linear projector to the cross-attention K/V weights. On the HUB benchmark spanning <strong>10 concepts across style, IP, celebrity, and NSFW</strong>, <span class="pure">PURE</span> achieves the best forget-retain trade-off in every category.
+      </p>
+    </div>
+  </section>
+
+  <!-- ========== MOTIVATION ========== -->
+  <section id="motivation" class="alt">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Why activation bases?</h2>
+      </div>
+
+      <div class="split">
+        <div class="text">
+          <p>
+            We build a basis from a small set of short anchor prompts, either from text-encoder embeddings or from cross-attention activations, then train a binary classifier in that basis. We measure recall on a held-out set of <em>natural</em> prompts that describe the same concept in longer, more varied form than the anchors.
+          </p>
+          <p>
+            A <span style="color: var(--coral-600); font-weight: 600;">text-space basis</span> catches only a small fraction. A <span style="color: var(--teal-700); font-weight: 600;">cross-attention activation basis</span> recovers <strong>5 to 7 times more</strong> across artistic style, intellectual property, and celebrity categories.
+          </p>
+          <p>
+            This is the core motivation for <span class="pure">PURE</span>: erase the target where the model actually represents it.
+          </p>
+        </div>
+        <div class="fig">
+          <img src="figures/probing.png" alt="Binary-probing recall on natural prompts" />
+          <div class="caption"><span class="fig-label">FIG. 02</span> Binary-probing recall on natural prompts (&uarr;).</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== METHOD ========== -->
+  <section id="method">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Method</h2>
+      </div>
+
+      <p>
+        <strong>Cross-attention in the diffusion U-Net.</strong> At every cross-attention layer \(\ell\), image features form queries \(Q^\ell\), and the text embedding \(e\) is projected into keys and values by learned weights \(W_K^\ell\) and \(W_V^\ell\). The post-attention activation at one query position is
+      </p>
+      <div class="formula">
+        $$h^\ell = \mathrm{softmax}\!\left(\frac{Q^\ell {K^\ell}^{\!\top}}{\sqrt{d^\ell}}\right) V^\ell.$$
+      </div>
+      <p>
+        \(W_K^\ell\) and \(W_V^\ell\) are the two matrices that decide how text content flows into the image. <span class="pure">PURE</span> edits exactly these, in closed form, given a small <strong>forget anchor set</strong> \(\mathcal{A}_f\) (short phrasings of the target concept) and a <strong>retain anchor set</strong> \(\mathcal{A}_r\) (phrasings of neighboring concepts to preserve). The full procedure is three steps and no gradient descent.
+      </p>
+
+      <div class="pipeline">
+        <div class="step">
+          <div class="step-side">
+            <div class="step-num">STEP</div>
+            <div class="step-big">01</div>
+          </div>
+          <div class="step-body">
+            <div class="step-num" style="margin-bottom: 6px;">ACTIVATION COLLECTION</div>
+            <h3>Run a short denoising trajectory</h3>
+            <p>For each anchor prompt, run a short denoising trajectory with a few random latents. At every cross-attention layer \(\ell\) and every step, read the post-attention activation and mean-pool over the spatial axis.</p>
+            <p>Stack the rows into per-layer activation matrices \(H_F^\ell\) (from forget anchors) and \(H_R^\ell\) (from retain anchors).</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-side">
+            <div class="step-num">STEP</div>
+            <div class="step-big">02</div>
+          </div>
+          <div class="step-body">
+            <div class="step-num" style="margin-bottom: 6px;">SUBSPACE ESTIMATION</div>
+            <h3>SVD on activation matrices</h3>
+            <p>Take the SVD of \(H_F^\ell\) and \(H_R^\ell\), keep the top right-singular vectors up to a cumulative-variance threshold, and form orthonormal bases \(V_F^\ell, V_R^\ell\) and projectors</p>
+            <div class="formula">
+              $$P_F^\ell = V_F^\ell {V_F^\ell}^{\!\top}, \qquad P_R^\ell = V_R^\ell {V_R^\ell}^{\!\top}.$$
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-side">
+            <div class="step-num">STEP</div>
+            <div class="step-big">03</div>
+          </div>
+          <div class="step-body">
+            <div class="step-num" style="margin-bottom: 6px;">CLOSED-FORM EDIT</div>
+            <h3>Left-multiply the K/V weights</h3>
+            <p>Compose the edit operator and apply it once to each layer's cross-attention key and value matrices:</p>
+            <div class="formula">
+              $$E^\ell = I - P_F^\ell\,(I - P_R^\ell)$$
+            </div>
+            <div class="formula">
+              $$W_K^\ell \leftarrow E^\ell W_K^\ell, \qquad W_V^\ell \leftarrow E^\ell W_V^\ell.$$
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p>
+        Because the basis is built from <em>what the U-Net renders</em> rather than what the user happens to type, the edit generalizes to paraphrased and adversarial prompts that the anchor set does not literally contain.
+      </p>
+    </div>
+  </section>
+
+  <!-- ========== RESULTS (table + qualitative) ========== -->
+  <section id="results" class="alt">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Results on HUB</h2>
+      </div>
+
+      <p>
+        We report the HUB <strong>H-mean</strong>, a harmonic mean over four metrics: <strong>target proportion</strong>, <strong>within-category retention</strong>, <strong>attack robustness</strong>, and <strong>quality</strong>. <span class="pure">PURE wins every category</span>, and improves the average over the next-best baseline (CURE) by <strong>+9.7 points</strong>.
+      </p>
+
+      <div class="table-wrap">
+        <table class="results">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Style</th>
+              <th>IP</th>
+              <th>Celebrity</th>
+              <th>NSFW</th>
+              <th>Average</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="baseline">
+              <td>SD (no edit)</td>
+              <td>0.462</td>
+              <td>0.331</td>
+              <td>0.469</td>
+              <td>0.482</td>
+              <td>0.436</td>
+            </tr>
+            <tr>
+              <td>ESD</td>
+              <td>0.599</td>
+              <td>0.551</td>
+              <td>0.640</td>
+              <td>0.312</td>
+              <td>0.526</td>
+            </tr>
+            <tr>
+              <td>MACE</td>
+              <td>0.614</td>
+              <td>0.578</td>
+              <td>0.584</td>
+              <td>0.296</td>
+              <td>0.518</td>
+            </tr>
+            <tr>
+              <td>Receler</td>
+              <td>0.525</td>
+              <td>0.377</td>
+              <td>0.610</td>
+              <td>0.518</td>
+              <td>0.508</td>
+            </tr>
+            <tr>
+              <td>UCE</td>
+              <td>0.328</td>
+              <td>0.654</td>
+              <td>0.657</td>
+              <td>0.470</td>
+              <td>0.527</td>
+            </tr>
+            <tr>
+              <td>CURE</td>
+              <td>0.565</td>
+              <td>0.571</td>
+              <td>0.572</td>
+              <td>0.465</td>
+              <td>0.543</td>
+            </tr>
+            <tr class="pure">
+              <td>PURE</td>
+              <td class="best">0.655</td>
+              <td class="best">0.683</td>
+              <td class="best">0.693</td>
+              <td class="best">0.528</td>
+              <td class="best">0.640</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-caption">
+        <strong>Table 1.</strong> H-mean of forget and retain scores on the HUB benchmark (higher is better). <span class="pure">PURE</span> achieves the best score in every category.
+      </div>
+    </div>
+
+    <div class="wrap" style="margin-top: 48px;">
+      <div class="figure bleed">
+        <div class="figure-scroll">
+          <img src="figures/main_fig.png" alt="Qualitative comparison on HUB forget and retain prompts" />
+        </div>
+        <div class="caption">
+          <span class="fig-label">FIG. 03</span>
+          Qualitative comparison on HUB forget and retain prompts. Each pair of consecutive rows shows a <strong>forget</strong> prompt on top and its corresponding <strong>retain</strong> prompt below. Training-based methods often damage neighboring concepts while suppressing the target; prior closed-form methods preserve them but leave noticeable leakage. <span class="pure">PURE</span> achieves stronger target suppression while preserving retain-image quality across categories.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== ABLATION: ANCHOR SET SIZE ========== -->
+  <section id="ablation">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Ablation: anchor set size</h2>
+      </div>
+
+      <p>
+        How sensitive is the method to how many anchor prompts we collect? We sweep the size of the forget anchor set \(|\mathcal{A}_f|\) and the retain anchor set \(|\mathcal{A}_r|\) independently and measure target detection on the held-out prompts (lower target = better forget) and retention on the related concepts (higher retain = better preservation).
+      </p>
+      <p>
+        The text-basis variant is brittle in both directions. Adding more forget anchors damages retention; adding more retain anchors causes the target to leak back in. The <span class="pure">activation-basis</span> variant stays stable across the entire sweep.
+      </p>
+
+      <div class="ablation-grid">
+        <div class="fig">
+          <img src="figures/forget_sweep.png" alt="Forget anchor scaling" />
+          <div class="caption"><span class="fig-label">FIG. 04(a)</span> Sweep over \(|\mathcal{A}_f|\): more forget anchors damage text-basis retention; activation-basis retention is stable.</div>
+        </div>
+        <div class="fig">
+          <img src="figures/retain_sweep.png" alt="Retain anchor scaling" />
+          <div class="caption"><span class="fig-label">FIG. 04(b)</span> Sweep over \(|\mathcal{A}_r|\): more retain anchors let the target leak back into the text-basis; activation-basis keeps the target suppressed.</div>
+        </div>
+      </div>
+
+      <div class="figure bleed" style="margin-top: 48px;">
+        <div class="figure-scroll">
+          <img src="figures/forget_sweep_qul.png" alt="Qualitative comparison as forget anchor set size grows" />
+        </div>
+        <div class="caption">
+          <span class="fig-label">FIG. 05</span>
+          Qualitative sweep over \(|\mathcal{A}_f|\). Forget: <em>"Pikachu runs up a mountain with the sun setting behind it."</em> Retain: <em>"Mario standing in a Mushroom Kingdom street."</em> The text-basis edit increasingly damages the retain image as more forget anchors are added; the activation-basis edit preserves it.
+        </div>
+      </div>
+
+      <div class="figure bleed" style="margin-top: 32px;">
+        <div class="figure-scroll">
+          <img src="figures/retain_sweep_qul.png" alt="Qualitative comparison as retain anchor set size grows" />
+        </div>
+        <div class="caption">
+          <span class="fig-label">FIG. 06</span>
+          Qualitative sweep over \(|\mathcal{A}_r|\). Forget: <em>"Pikachu sitting on a pile of hay in a rustic barn."</em> Retain: <em>"Snoopy sitting on a vintage motorcycle in a sunny desert landscape."</em> Under the text-basis, Pikachu reappears as the retain set grows; the activation-basis keeps it suppressed.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== BIBTEX ========== -->
+  <section id="bibtex" class="bibtex-section">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Citation</h2>
+      </div>
+      <p>If you find this work useful, please cite:</p>
+
+      <div class="bibtex-wrap">
+        <button class="copy-btn" onclick="copyBibtex()">Copy</button>
+<pre class="bibtex" id="bibtex-block"><span class="k">@article</span>{moon2026pure,
+  <span class="k">title</span>   = <span class="s">{Concept Unlearning via Cross-Attention Activation Projection for Diffusion Models}</span>,
+  <span class="k">author</span>  = <span class="s">{Saemi Moon and Suhyeon Jun and Seoyeon Lee and Dongwoo Kim}</span>,
+  <span class="k">journal</span> = <span class="s">{arXiv preprint arXiv:2605.25765}</span>,
+  <span class="k">year</span>    = <span class="s">{2026}</span>
+}</pre>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      &copy; 2026 Saemi Moon, Suhyeon Jun, Seoyeon Lee, Dongwoo Kim &middot; POSTECH<br/>
+      <a href="https://arxiv.org/abs/2605.25765" target="_blank" rel="noopener">arXiv:2605.25765</a>
+    </div>
+  </footer>
+
+  <script>
+    function copyBibtex() {
+      const text = document.getElementById('bibtex-block').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = orig; }, 1500);
+      });
+    }
+  </script>
+</body>
+</html>
