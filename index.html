@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PURE: Concept Unlearning via Cross-Attention Activation Projection for Diffusion Models</title>
-  <meta name="description" content="PURE (Projection in U-Net Rendering for Erasure): a closed-form method for erasing target concepts from pretrained text-to-image diffusion models via cross-attention activation projection." />
-  <meta property="og:title" content="PURE: Concept Unlearning via Cross-Attention Activation Projection for Diffusion Models" />
-  <meta property="og:description" content="A closed-form projector built from cross-attention activations erases target concepts while preserving the rest." />
+  <title>CASE: Concept Unlearning via Cross-Attention Activation Subspaces in Diffusion Models</title>
+  <meta name="description" content="CASE (Cross-Attention Subspace Erasure) is a closed-form concept-unlearning method that builds layer-specific forget and retain subspaces from cross-attention activations." />
+  <meta property="og:title" content="CASE: Concept Unlearning via Cross-Attention Activation Subspaces in Diffusion Models" />
+  <meta property="og:description" content="Layer-specific activation subspaces enable closed-form concept erasure with no fine-tuning or inference-time overhead." />
   <meta property="og:type" content="article" />
-  <meta property="og:image" content="figures/x1.png" />
+  <meta property="og:image" content="figures/compare_basis_case.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -71,8 +71,8 @@
     .wrap-wide { max-width: var(--wide-w);    margin: 0 auto; padding: 0 24px; }
 
     .mono { font-family: 'JetBrains Mono', Menlo, monospace; }
-    .pure { color: var(--teal-700); font-weight: 700; }
-    section.dark .pure { color: var(--teal-200); }
+    .case { color: var(--teal-700); font-weight: 700; }
+    section.dark .case { color: var(--teal-200); }
     .ref-link, .ref-link:visited {
       color: inherit;
       text-decoration: none;
@@ -546,20 +546,20 @@
     table.results .baseline td { color: var(--ink-400); font-style: italic; }
     table.results .baseline td:first-child { color: var(--ink-500); }
     table.results .best { font-weight: 700; color: var(--ink-900); }
-    table.results tr.pure {
+    table.results tr.case {
       background: var(--teal-50);
     }
-    table.results tr.pure td {
+    table.results tr.case td {
       color: var(--teal-900);
       font-weight: 600;
       border-bottom-color: var(--teal-100);
     }
-    table.results tr.pure td:first-child {
+    table.results tr.case td:first-child {
       color: var(--teal-700);
       font-family: 'JetBrains Mono', monospace;
       font-weight: 700;
     }
-    table.results tr.pure td.best { color: var(--teal-700); font-weight: 700; }
+    table.results tr.case td.best { color: var(--teal-700); font-weight: 700; }
     .table-caption {
       font-size: 14px;
       color: var(--ink-500);
@@ -629,32 +629,26 @@
   <header class="hero">
     <div class="wrap">
       <h1 class="title">
-        Concept Unlearning via Cross-Attention Activation Projection for Diffusion Models
+        Concept Unlearning via Cross-Attention Activation Subspaces in Diffusion Models
       </h1>
 
       <p class="subtitle">
-        A closed-form projector built from <span class="hi">cross-attention activations</span> rather than <span class="lo">text-encoder anchors</span>. <span class="pure">PURE</span> erases target concepts while preserving the rest, even under paraphrased and adversarial prompts.
+        A closed-form edit built from <span class="hi">layer-specific cross-attention activations</span> rather than a <span class="lo">shared text-space basis</span>. <span class="case">CASE</span> suppresses target concepts while preserving neighboring concepts, with no fine-tuning or inference-time overhead.
       </p>
 
       <div class="authors">
-        <a href="https://saemi410.github.io" target="_blank" rel="noopener">Saemi Moon</a><sup>1</sup>,
-        <a href="https://sooh-j.github.io/" target="_blank" rel="noopener">Suhyeon Jun</a><sup>1</sup>,
-        <a href="https://seoyeomm.github.io/" target="_blank" rel="noopener">Seoyeon Lee</a><sup>2</sup>,
-        <a href="https://dongwookim-ml.github.io/" target="_blank" rel="noopener">Dongwoo Kim</a><sup>1,2</sup>
+        Anonymous authors
       </div>
-      <div class="affiliations">
-        <sup>1</sup>CSE, POSTECH <span class="sep">·</span> <sup>2</sup>GSAI, POSTECH
-      </div>
-      <div class="venue">Preprint &middot; May 2026</div>
+      <div class="venue">Under double-blind review &middot; ICLR 2027</div>
 
       <div class="actions">
-        <a class="btn primary" href="https://arxiv.org/abs/2605.25765" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          arXiv
-        </a>
-        <a class="btn" href="https://arxiv.org/pdf/2605.25765" target="_blank" rel="noopener">
+        <a class="btn primary" href="paper.pdf" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          PDF
+          Paper (PDF)
+        </a>
+        <a class="btn" href="https://arxiv.org/abs/2605.25765" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Earlier version
         </a>
         <a class="btn disabled" href="#" aria-disabled="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
@@ -672,11 +666,11 @@
   <div class="teaser-wrap">
     <div class="wrap">
       <div class="teaser-figure">
-        <img src="figures/compare_basis.png" alt="Comparison between text and activation bases" />
+        <img src="figures/compare_basis_case.png" alt="Comparison between shared text-space and layer-specific activation-space bases" />
       </div>
       <div class="teaser-caption">
         <span class="fig-label">FIG. 01</span>
-        Prior closed-form methods build a shared <em>text-space</em> basis from anchor prompt embeddings. <span class="pure">PURE</span> instead captures layer-specific cross-attention <em>activations</em> during denoising and constructs an activation-space basis for each U-Net cross-attention layer.
+        Prior closed-form methods build a shared <em>text-space</em> basis from anchor prompt embeddings. <span class="case">CASE</span> instead captures cross-attention activations during denoising and constructs a layer-specific activation-space basis for every cross-attention layer.
       </div>
     </div>
   </div>
@@ -690,7 +684,7 @@
       </div>
 
       <p>
-        Concept unlearning erases a target concept from a pretrained text-to-image diffusion model without retraining. Existing closed-form methods rely on the text encoder's response to short anchor prompts, so paraphrased prompts that evoke the concept without naming it slip past the edit. <span class="pure">PURE</span> (Projection in U-Net Rendering for Erasure) builds forget and retain bases directly from per-layer cross-attention <em>activations</em> along a short denoising trajectory, then applies a single closed-form linear projector to the cross-attention K/V weights. On the HUB benchmark spanning <strong>10 concepts across style, IP, celebrity, and NSFW</strong>, <span class="pure">PURE</span> achieves the best forget-retain trade-off in every category.
+        Existing closed-form concept-unlearning methods usually derive editing directions from fixed text embeddings, which do not capture how a concept changes across latent states, timesteps, and layers. <span class="case">CASE</span> (Cross-Attention Subspace Erasure) constructs layer-specific forget and retain subspaces from cross-attention activations collected during denoising, then folds a retain-constrained linear operator directly into the cross-attention K/V weights. Across <strong>10 concepts in Style, IP, Celebrity, and NSFW</strong>, CASE achieves the highest H-Mean among the evaluated baselines in every category. It also remains effective under recovery attacks, jointly unlearns up to 100 artistic styles, and extends to SDXL and FLUX.1-dev.
       </p>
     </div>
   </section>
@@ -709,10 +703,10 @@
             We build a basis from a small set of short anchor prompts, either from text-encoder embeddings or from cross-attention activations, then train a binary classifier in that basis. We measure recall on a held-out set of <em>natural</em> prompts that describe the same concept in longer, more varied form than the anchors.
           </p>
           <p>
-            A <span style="color: var(--coral-600); font-weight: 600;">text-space basis</span> catches only a small fraction. A <span style="color: var(--teal-700); font-weight: 600;">cross-attention activation basis</span> recovers <strong>5 to 7 times more</strong> across artistic style, intellectual property, and celebrity categories.
+            A <span style="color: var(--coral-600); font-weight: 600;">text-space basis</span> catches only a small fraction. A <span style="color: var(--teal-700); font-weight: 600;">cross-attention activation basis</span> achieves approximately <strong>five times higher average recall</strong> across Style, IP, and Celebrity.
           </p>
           <p>
-            This is the core motivation for <span class="pure">PURE</span>: erase the target where the model actually represents it.
+            This is the core motivation for <span class="case">CASE</span>: build the editing basis from how the conditioning signal is expressed inside the denoising computation.
           </p>
         </div>
         <div class="fig">
@@ -738,7 +732,7 @@
         $$h^\ell = \mathrm{softmax}\!\left(\frac{Q^\ell {K^\ell}^{\!\top}}{\sqrt{d^\ell}}\right) V^\ell.$$
       </div>
       <p>
-        \(W_K^\ell\) and \(W_V^\ell\) are the two matrices that decide how text content flows into the image. <span class="pure">PURE</span> edits exactly these, in closed form, given a small <strong>forget anchor set</strong> \(\mathcal{A}_f\) (short phrasings of the target concept) and a <strong>retain anchor set</strong> \(\mathcal{A}_r\) (phrasings of neighboring concepts to preserve). The full procedure is three steps and no gradient descent.
+        \(W_K^\ell\) and \(W_V^\ell\) determine how text content flows into the image. <span class="case">CASE</span> edits exactly these matrices given a small <strong>forget anchor set</strong> \(\mathcal{A}_F\) and a <strong>retain anchor set</strong> \(\mathcal{A}_R\). The procedure has three steps, requires no gradient-based fine-tuning, and adds no computation at inference time.
       </p>
 
       <div class="pipeline">
@@ -790,10 +784,10 @@
       </div>
 
       <p>
-        Because the basis is built from <em>what the U-Net renders</em> rather than what the user happens to type, the edit generalizes to paraphrased and adversarial prompts that the anchor set does not literally contain.
+        The operator leaves vectors in the estimated retain subspace unchanged while removing forget-subspace components outside it. Because its bases are collected across latent states, timesteps, and layers, the edit better covers unseen formulations of the target concept.
       </p>
       <p>
-        <strong>Relationship to <a href="https://arxiv.org/abs/2505.12677" target="_blank" rel="noopener" class="ref-link">CURE</a>.</strong> <span class="pure">PURE</span> inherits the projection-and-cancellation form of CURE and edits the same cross-attention K/V matrices. The change is <em>what gets projected</em>: per-layer cross-attention activations rather than text-encoder embeddings. The switch in basis source forces the projector to be applied by left-multiplication instead of right-multiplication.
+        <strong>Relationship to <a href="https://arxiv.org/abs/2505.12677" target="_blank" rel="noopener" class="ref-link">CURE</a>.</strong> <span class="case">CASE</span> uses an analogous forget-and-retain spectral construction, but estimates a separate subspace for each layer from cross-attention activations rather than building one shared basis from text-encoder embeddings.
       </p>
     </div>
   </section>
@@ -807,7 +801,7 @@
       </div>
 
       <p>
-        We report the <strong>H-mean</strong>, a harmonic mean over four metrics (<strong>target proportion</strong>, <strong>within-category retention</strong>, <strong>attack robustness</strong>, and <strong>quality</strong>), using the <a href="https://arxiv.org/abs/2410.05664" target="_blank" rel="noopener" class="ref-link">HUB</a> benchmark. <span class="pure">PURE wins every category</span>, and improves the average over the next-best baseline (<a href="https://arxiv.org/abs/2505.12677" target="_blank" rel="noopener" class="ref-link">CURE</a>) by <strong>+9.7 points</strong>.
+        We report the <strong>H-Mean</strong>, a harmonic mean over four metrics (<strong>target proportion</strong>, <strong>within-category retention</strong>, <strong>attack robustness</strong>, and <strong>generation quality</strong>), using the <a href="https://arxiv.org/abs/2410.05664" target="_blank" rel="noopener" class="ref-link">HUB</a> benchmark. The comparison now includes training-based methods, inference-time methods, and closed-form edits. <span class="case">CASE achieves the highest H-Mean in all four categories</span>.
       </p>
 
       <div class="table-wrap">
@@ -828,73 +822,89 @@
               <td>0.462</td>
               <td>0.331</td>
               <td>0.469</td>
-              <td>0.482</td>
-              <td>0.436</td>
+              <td>0.449</td>
+              <td>0.428</td>
             </tr>
             <tr>
               <td>ESD</td>
               <td>0.599</td>
               <td>0.551</td>
               <td>0.640</td>
-              <td>0.312</td>
+              <td>0.313</td>
               <td>0.526</td>
-            </tr>
-            <tr>
-              <td>MACE</td>
-              <td>0.614</td>
-              <td>0.578</td>
-              <td>0.584</td>
-              <td>0.296</td>
-              <td>0.518</td>
             </tr>
             <tr>
               <td>Receler</td>
               <td>0.525</td>
               <td>0.377</td>
               <td>0.610</td>
-              <td>0.518</td>
+              <td>0.519</td>
               <td>0.508</td>
             </tr>
             <tr>
+              <td>MACE</td>
+              <td>0.614</td>
+              <td>0.577</td>
+              <td>0.584</td>
+              <td>0.315</td>
+              <td>0.522</td>
+            </tr>
+            <tr>
+              <td>SAFREE</td>
+              <td>0.484</td>
+              <td>0.498</td>
+              <td>0.473</td>
+              <td>0.542</td>
+              <td>0.499</td>
+            </tr>
+            <tr>
+              <td>AdaVD</td>
+              <td>0.552</td>
+              <td>0.655</td>
+              <td>0.624</td>
+              <td>0.460</td>
+              <td>0.573</td>
+            </tr>
+            <tr>
               <td>UCE</td>
-              <td>0.328</td>
+              <td>0.329</td>
               <td>0.654</td>
               <td>0.657</td>
-              <td>0.470</td>
-              <td>0.527</td>
+              <td>0.593</td>
+              <td>0.558</td>
             </tr>
             <tr>
               <td>CURE</td>
               <td>0.565</td>
               <td>0.571</td>
               <td>0.572</td>
-              <td>0.465</td>
-              <td>0.543</td>
+              <td>0.530</td>
+              <td>0.559</td>
             </tr>
-            <tr class="pure">
-              <td>PURE</td>
+            <tr class="case">
+              <td>CASE</td>
               <td class="best">0.655</td>
               <td class="best">0.683</td>
               <td class="best">0.693</td>
-              <td class="best">0.528</td>
-              <td class="best">0.640</td>
+              <td class="best">0.608</td>
+              <td class="best">0.660</td>
             </tr>
           </tbody>
         </table>
       </div>
       <div class="table-caption">
-        <strong>Table 1.</strong> H-mean on the HUB benchmark (higher is better). <span class="pure">PURE</span> achieves the best score in every category.
+        <strong>Table 1.</strong> H-Mean on the HUB benchmark (higher is better). The Average column is the mean across the four category-level H-Means.
       </div>
     </div>
 
     <div class="wrap" style="margin-top: 48px;">
       <div class="figure bleed">
         <div class="figure-scroll">
-          <img src="figures/main_fig.png" alt="Qualitative comparison on HUB forget and retain prompts" />
+          <img src="figures/main_fig_case.png" alt="Qualitative comparison of CASE and eight baselines on HUB prompts" />
         </div>
         <div class="caption">
           <span class="fig-label">FIG. 03</span>
-          Qualitative comparison on HUB forget and retain prompts. Each pair of consecutive rows shows a <strong>forget</strong> prompt on top and its corresponding <strong>retain</strong> prompt below. Training-based methods often damage neighboring concepts while suppressing the target; prior closed-form methods preserve them but leave noticeable leakage. <span class="pure">PURE</span> achieves stronger target suppression while preserving retain-image quality across categories.
+          Qualitative comparison on HUB prompts. In each panel, the main image is generated from a <strong>forget</strong> prompt and the lower-right inset from a corresponding <strong>retain</strong> prompt. <span class="case">CASE</span> suppresses the target while preserving neighboring concepts across Celebrity, IP, and Style.
         </div>
       </div>
     </div>
@@ -909,20 +919,20 @@
       </div>
 
       <p>
-        How sensitive is the method to how many anchor prompts we collect? We sweep the size of the forget anchor set \(|\mathcal{A}_f|\) and the retain anchor set \(|\mathcal{A}_r|\) independently and measure target detection on the held-out prompts (lower target = better forget) and retention on the related concepts (higher retain = better preservation).
+        How sensitive is the method to how many anchor prompts we collect? We sweep the size of the forget anchor set \(|\mathcal{A}_F|\) and the retain anchor set \(|\mathcal{A}_R|\) independently and measure target detection on held-out prompts (lower is better) and retention of related concepts (higher is better).
       </p>
       <p>
-        The text-basis variant is brittle in both directions. Adding more forget anchors damages retention; adding more retain anchors causes the target to leak back in. The <span class="pure">activation-basis</span> variant stays stable across the entire sweep.
+        Natural forget prompts improve suppression for both representations, but the text-basis edit loses retention as the forget set grows. With more retain anchors, the target rapidly reappears under the text basis. The <span class="case">activation basis</span> keeps stronger suppression while retention improves and then plateaus near the default retain-set size.
       </p>
 
       <div class="ablation-grid">
         <div class="fig">
           <img src="figures/forget_sweep.png" alt="Forget anchor scaling" />
-          <div class="caption"><span class="fig-label">FIG. 04(a)</span> Sweep over \(|\mathcal{A}_f|\): more forget anchors damage text-basis retention; activation-basis retention is stable.</div>
+          <div class="caption"><span class="fig-label">FIG. 04(a)</span> Sweep over \(|\mathcal{A}_F|\): activation-space editing maintains strong suppression while retention improves as natural forget anchors are added.</div>
         </div>
         <div class="fig">
           <img src="figures/retain_sweep.png" alt="Retain anchor scaling" />
-          <div class="caption"><span class="fig-label">FIG. 04(b)</span> Sweep over \(|\mathcal{A}_r|\): more retain anchors let the target leak back into the text-basis; activation-basis keeps the target suppressed.</div>
+          <div class="caption"><span class="fig-label">FIG. 04(b)</span> Sweep over \(|\mathcal{A}_R|\): additional retain anchors help preservation, while target leakage grows much faster with the text basis.</div>
         </div>
       </div>
 
@@ -932,7 +942,7 @@
         </div>
         <div class="caption">
           <span class="fig-label">FIG. 05</span>
-          Qualitative sweep over \(|\mathcal{A}_f|\). Forget: <em>"Pikachu runs up a mountain with the sun setting behind it."</em> Retain: <em>"Mario standing in a Mushroom Kingdom street."</em> The text-basis edit increasingly damages the retain image as more forget anchors are added; the activation-basis edit preserves it.
+          Qualitative comparison as \(|\mathcal{A}_F|\) increases. The text-basis edit increasingly damages the retained Mario concept, while activation-space editing preserves it.
         </div>
       </div>
 
@@ -942,8 +952,76 @@
         </div>
         <div class="caption">
           <span class="fig-label">FIG. 06</span>
-          Qualitative sweep over \(|\mathcal{A}_r|\). Forget: <em>"Pikachu sitting on a pile of hay in a rustic barn."</em> Retain: <em>"Snoopy sitting on a vintage motorcycle in a sunny desert landscape."</em> Under the text-basis, Pikachu reappears as the retain set grows; the activation-basis keeps it suppressed.
+          Qualitative comparison as \(|\mathcal{A}_R|\) increases. Pikachu reappears under the text-basis edit as the retain set grows, whereas activation-space editing keeps it suppressed while preserving Snoopy.
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SCALABILITY, ROBUSTNESS, AND GENERALIZATION ========== -->
+  <section id="generalization" class="alt">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Scalability, robustness, and generalization</h2>
+      </div>
+
+      <p>
+        The expanded evaluation tests whether the activation-space edit holds beyond the ten single-concept HUB settings. <span class="case">CASE</span> maintains a favorable suppression-retention trade-off when jointly erasing up to 100 artistic styles, resists recovery attempts across prompt, embedding, and sampling attacks, and extends beyond Stable Diffusion v1.5.
+      </p>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="num">100<span class="unit">styles</span></div>
+          <div class="label">Jointly erased while retaining the strongest CLIPR − CLIPE across all evaluated concept counts.</div>
+        </div>
+        <div class="stat coral">
+          <div class="num">4<span class="unit">attacks</span></div>
+          <div class="label">Evaluated across prompt, textual-inversion embedding, and noise-based sampling attack surfaces.</div>
+        </div>
+        <div class="stat ink">
+          <div class="num">2<span class="unit">larger models</span></div>
+          <div class="label">The activation-basis advantage extends to SDXL and FLUX.1-dev on the IP category.</div>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="margin-top: 32px;">
+        <table class="results">
+          <thead>
+            <tr>
+              <th>Attack</th>
+              <th>ESD</th>
+              <th>Receler</th>
+              <th>MACE</th>
+              <th>SAFREE</th>
+              <th>AdaVD</th>
+              <th>UCE</th>
+              <th>CURE</th>
+              <th>CASE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>UDA</td>
+              <td>95.8</td><td>93.2</td><td>83.1</td><td>83.1</td><td>100.0</td><td>99.2</td><td>98.3</td><td class="best">34.7</td>
+            </tr>
+            <tr>
+              <td>MMA</td>
+              <td>62.0</td><td>56.0</td><td>8.0</td><td>86.0</td><td>16.0</td><td>94.0</td><td>98.0</td><td class="best">4.0</td>
+            </tr>
+            <tr>
+              <td>CCE</td>
+              <td>64.1</td><td>59.2</td><td>78.9</td><td class="best">22.5</td><td>76.1</td><td>51.4</td><td>32.4</td><td>23.2</td>
+            </tr>
+            <tr>
+              <td>NBP</td>
+              <td>43.3</td><td>46.7</td><td class="best">3.3</td><td>23.3</td><td>70.0</td><td>43.3</td><td>60.0</td><td class="best">3.3</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-caption">
+        <strong>Table 2.</strong> NSFW attack success rates in percent (lower is better). CASE is best under UDA and MMA, tied for best under NBP, and second-best under CCE.
       </div>
     </div>
   </section>
@@ -952,18 +1030,18 @@
   <section id="bibtex" class="bibtex-section">
     <div class="wrap">
       <div class="section-head">
-        <span class="section-num">06</span>
+        <span class="section-num">07</span>
         <h2 class="section-title">Citation</h2>
       </div>
       <p>If you find this work useful, please cite:</p>
 
       <div class="bibtex-wrap">
         <button class="copy-btn" onclick="copyBibtex()">Copy</button>
-<pre class="bibtex" id="bibtex-block"><span class="k">@article</span>{moon2026pure,
-  <span class="k">title</span>   = <span class="s">{Concept Unlearning via Cross-Attention Activation Projection for Diffusion Models}</span>,
-  <span class="k">author</span>  = <span class="s">{Saemi Moon and Suhyeon Jun and Seoyeon Lee and Dongwoo Kim}</span>,
-  <span class="k">journal</span> = <span class="s">{arXiv preprint arXiv:2605.25765}</span>,
-  <span class="k">year</span>    = <span class="s">{2026}</span>
+<pre class="bibtex" id="bibtex-block"><span class="k">@unpublished</span>{anonymous2027case,
+  <span class="k">title</span>  = <span class="s">{Concept Unlearning via Cross-Attention Activation Subspaces in Diffusion Models}</span>,
+  <span class="k">author</span> = <span class="s">{Anonymous}</span>,
+  <span class="k">note</span>   = <span class="s">{Under double-blind review at ICLR 2027}</span>,
+  <span class="k">year</span>   = <span class="s">{2027}</span>
 }</pre>
       </div>
     </div>
@@ -971,8 +1049,8 @@
 
   <footer>
     <div class="wrap">
-      &copy; 2026 Saemi Moon, Suhyeon Jun, Seoyeon Lee, Dongwoo Kim &middot; POSTECH<br/>
-      <a href="https://arxiv.org/abs/2605.25765" target="_blank" rel="noopener">arXiv:2605.25765</a>
+      CASE &middot; Under double-blind review at ICLR 2027<br/>
+      <a href="paper.pdf" target="_blank" rel="noopener">Paper (PDF)</a>
     </div>
   </footer>
 
