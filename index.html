@@ -131,7 +131,7 @@
       margin: 22px auto 0;
       line-height: 1.55;
     }
-    .subtitle .hi { background: var(--teal-100); padding: 1px 6px; border-radius: 4px; color: var(--teal-900); font-weight: 500; }
+    .subtitle .hi { background: var(--teal-100); padding: 1px 6px; border-radius: 4px; color: var(--teal-900); font-weight: 700; }
     .subtitle .lo { background: var(--coral-100); padding: 1px 6px; border-radius: 4px; color: var(--coral-700); font-weight: 500; }
 
     .authors {
@@ -241,6 +241,8 @@
       margin: 0 0 18px;
     }
     section p strong { color: var(--ink-900); font-weight: 600; }
+    strong.text-basis { color: var(--coral-600); font-weight: 700; }
+    strong.activation-basis { color: var(--teal-700); font-weight: 700; }
     section p em { font-style: italic; color: var(--ink-900); }
     section.dark p { color: var(--ink-300); }
 
@@ -381,7 +383,11 @@
       text-align: center;
       line-height: 1.55;
     }
-    @media (max-width: 720px) { .split { grid-template-columns: 1fr; gap: 24px; } }
+    .split.figure-compact { grid-template-columns: minmax(0, 1fr) 280px; }
+    .split.figure-compact .fig { width: 100%; max-width: 280px; margin: 0 auto; }
+    @media (max-width: 720px) {
+      .split, .split.figure-compact { grid-template-columns: 1fr; gap: 24px; }
+    }
 
     /* ========== METHOD PIPELINE (vertical rows) ========== */
     .pipeline {
@@ -523,6 +529,12 @@
       font-weight: 700;
     }
     table.results tr.case td.best { color: var(--teal-700); font-weight: 700; }
+    table.results .method-type {
+      text-align: left;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+    table.results tbody td.method-type { color: var(--ink-500); font-weight: 400; }
     .table-caption {
       font-size: 14px;
       color: var(--ink-500);
@@ -634,7 +646,7 @@
       </div>
       <div class="teaser-caption">
         <span class="fig-label">FIG. 01</span>
-        Text-derived edits use a shared basis from fixed anchor embeddings. <span class="case">CASE</span> collects cross-attention activations across timesteps and initial latents to construct layer-specific forget and retain bases.
+        <strong class="text-basis">Text-derived edits</strong> use a shared basis from fixed anchor embeddings. <span class="case">CASE</span> collects <strong class="activation-basis">cross-attention activations</strong> across timesteps and initial latents to construct layer-specific forget and retain bases.
       </div>
     </div>
   </div>
@@ -648,10 +660,10 @@
       </div>
 
       <p>
-        Concept unlearning aims to suppress a target concept in a pretrained text-to-image diffusion model while preserving non-target concepts. Existing closed-form methods typically derive editing directions from fixed text embeddings. These representations may not fully capture how the conditioning signal is expressed across latent states, timesteps, and layers.
+        Concept unlearning aims to suppress a target concept in a pretrained text-to-image diffusion model while preserving non-target concepts. Existing closed-form methods typically derive editing directions from <strong class="text-basis">fixed text embeddings</strong>. These representations may not fully capture how the conditioning signal is expressed across latent states, timesteps, and layers.
       </p>
       <p>
-        <span class="case">CASE</span> (Cross-Attention Subspace Erasure) constructs layer-specific forget and retain subspaces from cross-attention activations observed during denoising. A <strong>retain-constrained linear operator</strong> is then incorporated directly into the key and value projection weights. Across ten concepts in four HUB categories, CASE achieves the highest H-Mean among the evaluated baselines. Further experiments examine joint unlearning of up to 100 artistic styles, recovery under diverse attacks, and activation-derived editing on SDXL and FLUX.1-dev.
+        <span class="case">CASE</span> (Cross-Attention Subspace Erasure) constructs layer-specific forget and retain subspaces from <strong class="activation-basis">cross-attention activations</strong> observed during denoising. A <strong class="activation-basis">retain-constrained linear operator</strong> is then incorporated directly into the key and value projection weights. Across ten concepts in four HUB categories, CASE achieves the highest H-Mean among the evaluated baselines. Further experiments examine joint unlearning of up to 100 artistic styles, recovery under diverse attacks, and activation-derived editing on SDXL and FLUX.1-dev.
       </p>
     </div>
   </section>
@@ -670,10 +682,10 @@
             We construct text and activation bases from the <strong>same six forget anchors</strong>, using singular value decomposition (SVD) with the same cumulative-variance threshold. A binary logistic-regression probe uses forget-anchor features as positives and in-category retain-anchor features as negatives. Both probes are evaluated on the same held-out natural target-concept prompts.
           </p>
           <p>
-            The activation basis achieves approximately <strong>five times the average recall</strong> of the text basis across Style, IP, and Celebrity. This comparison measures how well an anchor-derived basis transfers to unseen prompt formulations.
+            The <strong class="activation-basis">activation basis</strong> achieves approximately <strong class="activation-basis">five times the average recall</strong> of the <strong class="text-basis">text basis</strong> across Style, IP, and Celebrity. This comparison measures how well an anchor-derived basis transfers to unseen prompt formulations.
           </p>
           <p>
-            Controlling for sample count gives the same pattern: with only six feature vectors, average recall is <strong>0.643 for the activation basis versus 0.120 for the text basis</strong>. Increasing the activation-vector count to 600 raises recall to 0.658 (Appendix A.3, Table 4).
+            Controlling for sample count gives the same pattern: with only six feature vectors, average recall is <strong class="activation-basis">0.643 for the activation basis</strong> versus <strong class="text-basis">0.120 for the text basis</strong>. Increasing the activation-vector count to 600 raises recall to 0.658.
           </p>
         </div>
         <div class="fig">
@@ -699,7 +711,7 @@
         $$h^\ell = \mathrm{softmax}\!\left(\frac{Q^\ell {K^\ell}^{\!\top}}{\sqrt{d^\ell}}\right) V^\ell.$$
       </div>
       <p>
-        For a fixed prompt, the text representation and its keys and values remain fixed during denoising. The activation also depends on image-side queries, which vary with the latent state, timestep, and layer. CASE uses a <strong>forget anchor set</strong> \(\mathcal{A}_f\) describing the target and a <strong>retain anchor set</strong> \(\mathcal{A}_r\) describing concepts to preserve.
+        For a fixed prompt, the <strong class="text-basis">text representation</strong> and its keys and values remain fixed during denoising. The <strong class="activation-basis">activation</strong> also depends on image-side queries, which vary with the latent state, timestep, and layer. CASE uses a <strong>forget anchor set</strong> \(\mathcal{A}_f\) describing the target and a <strong>retain anchor set</strong> \(\mathcal{A}_r\) describing concepts to preserve.
       </p>
 
       <div class="pipeline">
@@ -759,7 +771,7 @@
         The correction \(P_F^\ell(I-P_R^\ell)x\) projects the component of \(x\) orthogonal to the retain subspace onto the forget subspace. Subtracting it leaves every vector in the estimated retain subspace unchanged. Folding the operator into the weights requires no gradient-based fine-tuning and adds no inference-time computation.
       </p>
       <p>
-        <strong>Relationship to <a href="https://arxiv.org/abs/2505.12677" target="_blank" rel="noopener" class="ref-link">CURE</a>.</strong> Both methods combine forget and retain subspaces in a closed-form edit. CASE constructs those subspaces from layer-specific cross-attention activations collected during denoising.
+        <strong class="text-basis">Relationship to <a href="https://arxiv.org/abs/2505.12677" target="_blank" rel="noopener" class="ref-link">CURE</a>.</strong> Both methods combine forget and retain subspaces in a closed-form edit. CASE constructs those subspaces from layer-specific cross-attention activations collected during denoising.
       </p>
     </div>
   </section>
@@ -773,13 +785,10 @@
       </div>
 
       <p>
-        We evaluate Stable Diffusion v1.5 on ten forget concepts from the <a href="https://arxiv.org/abs/2410.05664" target="_blank" rel="noopener" class="ref-link">Holistic Unlearning Benchmark (HUB)</a>: three each from Style, intellectual property (IP), and Celebrity, plus Nudity from NSFW. CASE uses \(T=10\) denoising steps, \(n_{\mathrm{lat}}=10\) initial latents per anchor, and \(\tau_F=\tau_R=0.95\), editing all 16 cross-attention layers. Style, IP, and Celebrity use six forget anchors and 54 retain anchors; NSFW uses 50 I2P forget prompts and no retain anchors.
+        We evaluate Stable Diffusion v1.5 on ten concepts across Style, intellectual property (IP), Celebrity, and NSFW in the <a href="https://arxiv.org/abs/2410.05664" target="_blank" rel="noopener" class="ref-link">Holistic Unlearning Benchmark (HUB)</a>. H-Mean summarizes the trade-off between target suppression, retention, adversarial robustness, and generation quality.
       </p>
       <p>
-        Evaluation covers <strong>target proportion</strong> on 10,000 prompts per forget concept, <strong>retention</strong> on 1,000 images per neighboring concept, <strong>attack success ratio</strong> on 1,000 Ring-A-Bell prompts, and <strong>generation quality</strong> measured by FID on 30,000 MS-COCO captions. NSFW retention uses HUB’s pinpoint-ness score on nearby concepts in CLIP text-embedding space.
-      </p>
-      <p>
-        H-Mean combines retention with \(1-\mathrm{Target}\), \(1-\mathrm{Attack}\), and \(\exp(-\mathrm{FID}/20)\). <span class="case">CASE achieves the highest H-Mean in all four categories</span>, balancing suppression, preservation, adversarial robustness, and generation quality across training-based, inference-time, and closed-form baselines.
+        <strong class="activation-basis">CASE achieves the highest H-Mean in all four categories</strong> among the evaluated training-based, inference-time, and closed-form methods.
       </p>
 
       <div class="table-wrap">
@@ -787,6 +796,7 @@
           <thead>
             <tr>
               <th>Method</th>
+              <th class="method-type">Method type</th>
               <th>Style</th>
               <th>IP</th>
               <th>Celebrity</th>
@@ -797,6 +807,7 @@
           <tbody>
             <tr class="baseline">
               <td>SD (no edit)</td>
+              <td class="method-type">Original model</td>
               <td>0.462</td>
               <td>0.331</td>
               <td>0.469</td>
@@ -805,6 +816,7 @@
             </tr>
             <tr>
               <td>ESD</td>
+              <td class="method-type">Training-based</td>
               <td>0.599</td>
               <td>0.551</td>
               <td>0.640</td>
@@ -813,6 +825,7 @@
             </tr>
             <tr>
               <td>Receler</td>
+              <td class="method-type">Training-based</td>
               <td>0.525</td>
               <td>0.377</td>
               <td>0.610</td>
@@ -821,6 +834,7 @@
             </tr>
             <tr>
               <td>MACE</td>
+              <td class="method-type">Training-based</td>
               <td>0.614</td>
               <td>0.577</td>
               <td>0.584</td>
@@ -829,6 +843,7 @@
             </tr>
             <tr>
               <td>SAFREE</td>
+              <td class="method-type">Inference-time</td>
               <td>0.484</td>
               <td>0.498</td>
               <td>0.473</td>
@@ -837,6 +852,7 @@
             </tr>
             <tr>
               <td>AdaVD</td>
+              <td class="method-type">Inference-time</td>
               <td>0.552</td>
               <td>0.655</td>
               <td>0.624</td>
@@ -845,6 +861,7 @@
             </tr>
             <tr>
               <td>UCE</td>
+              <td class="method-type">Closed-form</td>
               <td>0.329</td>
               <td>0.654</td>
               <td>0.657</td>
@@ -853,6 +870,7 @@
             </tr>
             <tr>
               <td>CURE</td>
+              <td class="method-type">Closed-form</td>
               <td>0.565</td>
               <td>0.571</td>
               <td>0.572</td>
@@ -861,6 +879,7 @@
             </tr>
             <tr class="case">
               <td>CASE</td>
+              <td class="method-type">Closed-form</td>
               <td class="best">0.655</td>
               <td class="best">0.683</td>
               <td class="best">0.693</td>
@@ -871,7 +890,7 @@
         </table>
       </div>
       <div class="table-caption">
-        <strong>Table 1.</strong> Category-level H-Mean from the paper (higher is better). Average is the arithmetic mean of the four displayed scores; the full four-metric breakdown appears in the paper.
+        <strong>Table 1.</strong> H-Mean on HUB (higher is better). Average is the arithmetic mean of the four category scores.
       </div>
     </div>
 
@@ -897,10 +916,10 @@
       </div>
 
       <p>
-        <strong>Forget anchors.</strong> For Pikachu, we replace the six template-based anchors with 6, 15, 30, or 50 natural prompts from HUB, keeping \(|\mathcal{A}_r|=54\). Natural prompts improve target suppression for both representations. As more forget anchors are added, text-derived editing loses retention; activation-derived editing maintains strong suppression while retention improves.
+        <strong>Forget anchors.</strong> For Pikachu, we replace the six template-based anchors with 6, 15, 30, or 50 natural prompts from HUB, keeping \(|\mathcal{A}_r|=54\). Natural prompts improve target suppression for both representations. As more forget anchors are added, <strong class="text-basis">text-derived editing loses retention</strong>; <strong class="activation-basis">activation-derived editing maintains strong suppression while retention improves</strong>.
       </p>
       <p>
-        <strong>Retain anchors.</strong> We vary \(|\mathcal{A}_r|\) over 0, 36, 54, 120, and 180 prompts, while evaluating retention on the same nine in-category concepts. Without retain anchors, both edits suppress the target at the cost of retention. Adding retain anchors improves preservation, which largely plateaus near 54 prompts. Target suppression weakens with both bases, but more gradually with the activation basis.
+        <strong>Retain anchors.</strong> We vary \(|\mathcal{A}_r|\) over 0, 36, 54, 120, and 180 prompts, while evaluating retention on the same nine in-category concepts. Without retain anchors, both edits suppress the target at the cost of retention. Adding retain anchors improves preservation, which largely plateaus near 54 prompts. Target suppression weakens with both bases, but <strong class="activation-basis">more gradually with the activation basis</strong>.
       </p>
 
       <div class="ablation-grid">
@@ -946,13 +965,13 @@
 
       <div class="experiment">
         <h3>Multi-concept unlearning</h3>
-        <div class="split">
+        <div class="split figure-compact">
           <div class="text">
             <p>
               Following the artistic-style evaluation protocol of MACE, we jointly erase \(N\in\{1,10,50,100\}\) styles without retain anchors. Retention is evaluated on a fixed set of non-target styles. \(\mathrm{CLIP}_E\) and \(\mathrm{CLIP}_R\) measure average image–prompt similarity for erased and retained styles, respectively.
             </p>
             <p>
-              CASE achieves the highest \(\mathrm{CLIP}_R-\mathrm{CLIP}_E\) at every evaluated concept count. At 100 styles, the gap is <strong>3.31</strong>, compared with 1.53 for MACE, 1.20 for UCE, 1.07 for AdaVD, and −0.69 for CURE. CASE’s corresponding \(\mathrm{CLIP}_E\) and \(\mathrm{CLIP}_R\) are 16.28 and 19.59 (Appendix A.3, Table 5).
+              CASE achieves the highest \(\mathrm{CLIP}_R-\mathrm{CLIP}_E\) at every evaluated concept count. At 100 styles, the gap is <strong class="activation-basis">3.31</strong>, compared with 1.53 for MACE, 1.20 for UCE, 1.07 for AdaVD, and −0.69 for CURE. CASE’s corresponding \(\mathrm{CLIP}_E\) and \(\mathrm{CLIP}_R\) are 16.28 and 19.59.
             </p>
           </div>
           <div class="fig">
@@ -968,7 +987,7 @@
           Beyond Ring-A-Bell, we test recovery of the nudity concept through prompt, embedding, and sampling interventions. UnlearnDiffAtk (UDA) and MMA-Diffusion search for adversarial prompts; CCE optimizes a textual-inversion embedding; Noise-Based Probing (NBP) injects noise during denoising with the prompt fixed. Success is measured by NudeNet detection on generated images.
         </p>
         <p>
-          CASE has the lowest attack success rates under <strong>UDA (34.7%)</strong> and <strong>MMA-Diffusion (4.0%)</strong>, ties MACE under NBP (3.3%), and is second to SAFREE under CCE (23.2% versus 22.5%). Recovery remains possible, with the success rate depending on the attack.
+          CASE has the lowest attack success rates under <strong class="activation-basis">UDA (34.7%)</strong> and <strong class="activation-basis">MMA-Diffusion (4.0%)</strong>, ties MACE under NBP (3.3%), and is second to SAFREE under CCE (23.2% versus 22.5%). Recovery remains possible, with the success rate depending on the attack.
         </p>
 
       <div class="table-wrap">
@@ -1017,7 +1036,7 @@
           We compare text-derived and activation-derived edits on the IP category for <strong>FLUX.1-dev and SDXL</strong>. Both experiments vary the forget threshold \(\tau_F\) without retain anchors, generating 1,000 images per target and retain concept.
         </p>
         <p>
-          On FLUX.1-dev, the activation basis produces substantially lower target proportions across the evaluated thresholds. On SDXL, target suppression becomes progressively stronger as \(\tau_F\) increases. Retention remains comparatively high on both models. Text-derived edits leave target proportions near those of the original models over much of the evaluated range.
+          On FLUX.1-dev, the <strong class="activation-basis">activation basis</strong> produces substantially lower target proportions across the evaluated thresholds. On SDXL, target suppression becomes progressively stronger as \(\tau_F\) increases. Retention remains comparatively high on both models. <strong class="text-basis">Text-derived edits</strong> leave target proportions near those of the original models over much of the evaluated range.
         </p>
         <div class="ablation-grid">
           <div class="fig">
