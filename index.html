@@ -147,6 +147,7 @@
       padding-bottom: 1px;
     }
     .authors a:hover { color: var(--teal-700); border-color: var(--teal-600); }
+    .authors .author-name { color: var(--ink-900); }
     .authors sup { color: var(--teal-600); font-weight: 700; font-size: 0.7em; }
 
     .affiliations {
@@ -352,11 +353,30 @@
     }
     .stat .num .unit { font-size: 16px; color: var(--ink-500); font-weight: 600; margin-left: 2px; }
     .stat .label {
-      font-size: 13px;
+      font-size: 14px;
       color: var(--ink-500);
-      line-height: 1.45;
+      line-height: 1.55;
+    }
+    .stat .label strong {
+      display: block;
+      color: var(--ink-900);
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+    .stat .label .metric { color: var(--ink-900); font-weight: 700; }
+    .stats.findings { grid-template-columns: 1fr; gap: 14px; }
+    .stats.findings .stat {
+      display: grid;
+      grid-template-columns: 170px 1fr;
+      gap: 24px;
+      align-items: start;
+      padding: 24px 28px;
     }
     @media (max-width: 640px) { .stats { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) {
+      .stats.findings .stat { display: block; }
+      .stats.findings .stat .num { margin-bottom: 12px; }
+    }
 
     /* ========== FIGURES (in-section) ========== */
     .figure {
@@ -637,7 +657,13 @@
       </p>
 
       <div class="authors">
-        Anonymous authors
+        <a href="https://saemi410.github.io" target="_blank" rel="noopener">Saemi Moon</a><sup>1</sup>,
+        <span class="author-name">Suhyeon Jun</span><sup>1</sup>,
+        <span class="author-name">Seoyeon Lee</span><sup>2</sup>,
+        <a href="https://dongwookim-ml.github.io/" target="_blank" rel="noopener">Dongwoo Kim</a><sup>1,2</sup>
+      </div>
+      <div class="affiliations">
+        <sup>1</sup>CSE, POSTECH <span class="sep">·</span> <sup>2</sup>GSAI, POSTECH
       </div>
       <div class="venue">Under double-blind review &middot; ICLR 2027</div>
 
@@ -645,10 +671,6 @@
         <a class="btn primary" href="paper.pdf" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Paper (PDF)
-        </a>
-        <a class="btn" href="https://arxiv.org/abs/2605.25765" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Earlier version
         </a>
         <a class="btn disabled" href="#" aria-disabled="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
@@ -970,18 +992,27 @@
         The expanded evaluation tests whether the activation-space edit holds beyond the ten single-concept HUB settings. <span class="case">CASE</span> maintains a favorable suppression-retention trade-off when jointly erasing up to 100 artistic styles, resists recovery attempts across prompt, embedding, and sampling attacks, and extends beyond Stable Diffusion v1.5.
       </p>
 
-      <div class="stats">
+      <div class="stats findings">
         <div class="stat">
           <div class="num">100<span class="unit">styles</span></div>
-          <div class="label">Jointly erased while retaining the strongest CLIPR − CLIPE across all evaluated concept counts.</div>
+          <div class="label">
+            <strong>Multi-concept scalability</strong>
+            CASE jointly erases \(N \in \{1, 10, 50, 100\}\) artistic styles without retain anchors. It achieves the highest \(\mathrm{CLIP}_R - \mathrm{CLIP}_E\) at every evaluated concept count, indicating the strongest suppression-retention trade-off among CASE, CURE, MACE, UCE, and AdaVD.
+          </div>
         </div>
         <div class="stat coral">
           <div class="num">4<span class="unit">attacks</span></div>
-          <div class="label">Evaluated across prompt, textual-inversion embedding, and noise-based sampling attack surfaces.</div>
+          <div class="label">
+            <strong>Robustness to recovery attacks</strong>
+            On NSFW recovery, CASE records <span class="metric">34.7%</span> under UDA and <span class="metric">4.0%</span> under MMA, the lowest attack success rates in both settings. It reaches <span class="metric">23.2%</span> under CCE, second only to SAFREE, and ties MACE for the best NBP result at <span class="metric">3.3%</span>.
+          </div>
         </div>
         <div class="stat ink">
           <div class="num">2<span class="unit">larger models</span></div>
-          <div class="label">The activation-basis advantage extends to SDXL and FLUX.1-dev on the IP category.</div>
+          <div class="label">
+            <strong>Generalization across architectures</strong>
+            On the IP category, text-derived edits leave target generation close to the original model across much of the threshold range. Activation-derived edits produce substantially lower target proportions on FLUX.1-dev and increasingly strong suppression on SDXL as \(\tau_F\) rises, while retaining comparatively high performance on neighboring concepts.
+          </div>
         </div>
       </div>
 
@@ -1037,9 +1068,9 @@
 
       <div class="bibtex-wrap">
         <button class="copy-btn" onclick="copyBibtex()">Copy</button>
-<pre class="bibtex" id="bibtex-block"><span class="k">@unpublished</span>{anonymous2027case,
+<pre class="bibtex" id="bibtex-block"><span class="k">@unpublished</span>{moon2027case,
   <span class="k">title</span>  = <span class="s">{Concept Unlearning via Cross-Attention Activation Subspaces in Diffusion Models}</span>,
-  <span class="k">author</span> = <span class="s">{Anonymous}</span>,
+  <span class="k">author</span> = <span class="s">{Saemi Moon and Suhyeon Jun and Seoyeon Lee and Dongwoo Kim}</span>,
   <span class="k">note</span>   = <span class="s">{Under double-blind review at ICLR 2027}</span>,
   <span class="k">year</span>   = <span class="s">{2027}</span>
 }</pre>
@@ -1049,7 +1080,7 @@
 
   <footer>
     <div class="wrap">
-      CASE &middot; Under double-blind review at ICLR 2027<br/>
+      &copy; 2027 Saemi Moon, Suhyeon Jun, Seoyeon Lee, Dongwoo Kim &middot; POSTECH<br/>
       <a href="paper.pdf" target="_blank" rel="noopener">Paper (PDF)</a>
     </div>
   </footer>
