@@ -622,9 +622,9 @@
       </div>
 
       <div class="actions">
-        <a class="btn primary" href="paper.pdf" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Paper (PDF)
+        <a class="btn primary" href="https://arxiv.org/abs/2605.25765" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Paper (arXiv)
         </a>
         <a class="btn disabled" href="#" aria-disabled="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
@@ -679,7 +679,7 @@
       <div class="split">
         <div class="text">
           <p>
-            We construct text and activation bases from the same six forget anchors, using singular value decomposition (SVD) with the same cumulative-variance threshold. A binary logistic-regression probe uses forget-anchor features as positives and in-category retain-anchor features as negatives. Both probes are evaluated on the same held-out natural target-concept prompts.
+            We construct text and activation bases from the <strong>same six forget anchors</strong>, using singular value decomposition (SVD) with the same cumulative-variance threshold. A binary logistic-regression probe uses forget-anchor features as positives and in-category retain-anchor features as negatives. Both probes are evaluated on the same held-out natural target-concept prompts.
           </p>
           <p>
             The activation basis achieves approximately <strong class="activation-basis">five times the average recall</strong> of the text basis across Style, IP, and Celebrity. This comparison measures how well an anchor-derived basis transfers to unseen prompt formulations.
@@ -711,7 +711,7 @@
         $$h^\ell = \mathrm{softmax}\!\left(\frac{Q^\ell {K^\ell}^{\!\top}}{\sqrt{d^\ell}}\right) V^\ell.$$
       </div>
       <p>
-        For a fixed prompt, the text representation and its keys and values remain fixed during denoising. The activation also depends on image-side queries, which vary with the latent state, timestep, and layer. CASE uses a forget anchor set \(\mathcal{A}_f\) describing the target and a retain anchor set \(\mathcal{A}_r\) describing concepts to preserve.
+        For a fixed prompt, the text representation and its keys and values <strong class="text-basis">remain fixed during denoising</strong>. The activation also depends on image-side queries, which <strong class="activation-basis">vary with the latent state, timestep, and layer</strong>. CASE uses a forget anchor set \(\mathcal{A}_f\) describing the target and a retain anchor set \(\mathcal{A}_r\) describing concepts to preserve.
       </p>
 
       <div class="pipeline">
@@ -768,7 +768,7 @@
       </div>
 
       <p>
-        The correction \(P_F^\ell(I-P_R^\ell)x\) projects the component of \(x\) orthogonal to the retain subspace onto the forget subspace. Subtracting it <strong class="activation-basis">leaves every vector in the estimated retain subspace unchanged</strong>. Folding the operator into the weights requires no gradient-based fine-tuning and adds no inference-time computation.
+        The correction \(P_F^\ell(I-P_R^\ell)x\) projects the component of \(x\) orthogonal to the retain subspace onto the forget subspace. Subtracting it <strong class="activation-basis">leaves every vector in the estimated retain subspace unchanged</strong>. Folding the operator into the weights requires <strong class="activation-basis">no gradient-based fine-tuning and adds no inference-time computation</strong>.
       </p>
       <p>
         Relationship to <a href="https://arxiv.org/abs/2505.12677" target="_blank" rel="noopener" class="ref-link">CURE</a>. Both methods combine forget and retain subspaces in a closed-form edit. CASE constructs those subspaces from layer-specific cross-attention activations collected during denoising.
@@ -919,7 +919,7 @@
         Forget anchors. For Pikachu, we replace the six template-based anchors with 6, 15, 30, or 50 natural prompts from HUB, keeping \(|\mathcal{A}_r|=54\). Natural prompts improve target suppression for both representations. As more forget anchors are added, text-derived editing <strong class="text-basis">loses retention</strong>; activation-derived editing <strong class="activation-basis">maintains strong suppression while retention improves</strong>.
       </p>
       <p>
-        Retain anchors. We vary \(|\mathcal{A}_r|\) over 0, 36, 54, 120, and 180 prompts, while evaluating retention on the same nine in-category concepts. Without retain anchors, both edits suppress the target at the cost of retention. Adding retain anchors improves preservation, which largely plateaus near 54 prompts. Target suppression weakens with both bases, but more gradually with the activation basis.
+        Retain anchors. We vary \(|\mathcal{A}_r|\) over 0, 36, 54, 120, and 180 prompts, while evaluating retention on the same nine in-category concepts. Without retain anchors, both edits suppress the target at the cost of retention. Adding retain anchors improves preservation, which largely plateaus near 54 prompts. Target suppression weakens with both bases, but <strong class="activation-basis">more gradually with the activation basis</strong>.
       </p>
 
       <div class="ablation-grid">
@@ -1036,7 +1036,7 @@
           We compare text-derived and activation-derived edits on the IP category for FLUX.1-dev and SDXL. Both experiments vary the forget threshold \(\tau_F\) without retain anchors, generating 1,000 images per target and retain concept.
         </p>
         <p>
-          On FLUX.1-dev, the activation basis produces <strong class="activation-basis">substantially lower target proportions across the evaluated thresholds</strong>. On SDXL, target suppression becomes progressively stronger as \(\tau_F\) increases. Retention remains comparatively high on both models. Text-derived edits leave target proportions near those of the original models over much of the evaluated range.
+          On FLUX.1-dev, the activation basis produces <strong class="activation-basis">substantially lower target proportions across the evaluated thresholds</strong>. On SDXL, target suppression becomes progressively stronger as \(\tau_F\) increases. Retention remains comparatively high on both models. Text-derived edits <strong class="text-basis">leave target proportions near those of the original models</strong> over much of the evaluated range.
         </p>
         <div class="ablation-grid">
           <div class="fig">
@@ -1063,11 +1063,15 @@
 
       <div class="bibtex-wrap">
         <button class="copy-btn" onclick="copyBibtex()">Copy</button>
-<pre class="bibtex" id="bibtex-block"><span class="k">@unpublished</span>{moon2026case,
-  <span class="k">title</span>  = <span class="s">{Concept Unlearning via Cross-Attention Activation Subspaces in Diffusion Models}</span>,
-  <span class="k">author</span> = <span class="s">{Saemi Moon and Suhyeon Jun and Seoyeon Lee and Dongwoo Kim}</span>,
-  <span class="k">note</span>   = <span class="s">{Manuscript}</span>,
-  <span class="k">year</span>   = <span class="s">{2026}</span>
+<pre class="bibtex" id="bibtex-block"><span class="k">@misc</span>{moon2026conceptunlearningcrossattentionactivation,
+  <span class="k">title</span>         = <span class="s">{Concept Unlearning via Cross-Attention Activation Projection for Diffusion Models}</span>,
+  <span class="k">author</span>        = <span class="s">{Saemi Moon and Suhyeon Jun and Seoyeon Lee and Dongwoo Kim}</span>,
+  <span class="k">year</span>          = <span class="s">{2026}</span>,
+  <span class="k">eprint</span>        = <span class="s">{2605.25765}</span>,
+  <span class="k">archivePrefix</span> = <span class="s">{arXiv}</span>,
+  <span class="k">primaryClass</span>  = <span class="s">{cs.CV}</span>,
+  <span class="k">doi</span>           = <span class="s">{10.48550/arXiv.2605.25765}</span>,
+  <span class="k">url</span>           = <span class="s">{https://arxiv.org/abs/2605.25765}</span>
 }</pre>
       </div>
     </div>
@@ -1076,7 +1080,7 @@
   <footer>
     <div class="wrap">
       &copy; 2026 Saemi Moon, Suhyeon Jun, Seoyeon Lee, Dongwoo Kim &middot; POSTECH<br/>
-      <a href="paper.pdf" target="_blank" rel="noopener">Paper (PDF)</a>
+      <a href="https://arxiv.org/abs/2605.25765" target="_blank" rel="noopener">Paper (arXiv)</a>
     </div>
   </footer>
 
